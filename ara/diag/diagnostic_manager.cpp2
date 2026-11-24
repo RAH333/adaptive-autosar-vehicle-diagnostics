@@ -1,4 +1,3 @@
-cat << 'EOF' > ara/diag/diagnostic_manager.cpp
 #include "diagnostic_manager.hpp"
 
 namespace ara {
@@ -43,4 +42,3 @@ std::vector<uint8_t> DiagnosticManager::HandleUdsRequest(const std::vector<uint8
 
 } // namespace diag
 } // namespace ara
-EOF
