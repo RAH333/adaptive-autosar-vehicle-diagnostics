@@ -1,0 +1,30 @@
+name: Adaptive AUTOSAR C++17 & SIL CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure CMake (C++17)
+        run: cmake -B build -S .
+
+      - name: Build Adaptive AUTOSAR Applications
+        run: cmake --build build
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Execute Adaptive SOA SIL Tests
+        run: python3 sil_tests/test_adaptive_soa.py
+        
