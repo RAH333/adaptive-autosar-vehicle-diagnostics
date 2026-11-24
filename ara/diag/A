@@ -1,0 +1,46 @@
+cat << 'EOF' > ara/diag/diagnostic_manager.cpp
+#include "diagnostic_manager.hpp"
+
+namespace ara {
+namespace diag {
+
+DiagnosticManager::DiagnosticManager()
+    : latestCoolantTemp_(0), overheatDtcActive_(false) {}
+
+void DiagnosticManager::UpdateVehicleState(int16_t coolantTemp, bool overheatDtcActive) {
+    latestCoolantTemp_ = coolantTemp;
+    overheatDtcActive_ = overheatDtcActive;
+}
+
+std::vector<uint8_t> DiagnosticManager::HandleUdsRequest(const std::vector<uint8_t>& request) const {
+    if ((request.size() >= 3U) && (request.at(0) == kUdsReadDataById)) {
+        uint16_t did = (static_cast<uint16_t>(request.at(1)) << 8U) |
+                       static_cast<uint16_t>(request.at(2));
+        uint8_t posSid = static_cast<uint8_t>(kUdsReadDataById + kUdsPositiveRespOffset);
+
+        if (did == kDidCoolantTemp) {
+            return {
+                posSid,
+                request.at(1),
+                request.at(2),
+                static_cast<uint8_t>(latestCoolantTemp_)
+            };
+        }
+
+        if (did == kDidOverheatDtcStatus) {
+            return {
+                posSid,
+                request.at(1),
+                request.at(2),
+                static_cast<uint8_t>(overheatDtcActive_ ? 0x01U : 0x00U)
+            };
+        }
+    }
+
+    uint8_t reqSid = request.empty() ? static_cast<uint8_t>(0x00U) : request.at(0);
+    return {kUdsNegativeRespSid, reqSid, 0x13U};
+}
+
+} // namespace diag
+} // namespace ara
+EOF
